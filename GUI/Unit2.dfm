@@ -1,6 +1,7 @@
 object Password: TPassword
   Left = 0
   Top = 0
+  BorderIcons = [biSystemMenu]
   Caption = 'Master Password'
   ClientHeight = 119
   ClientWidth = 361
