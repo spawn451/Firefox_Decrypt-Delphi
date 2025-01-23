@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{B51F4DC0-5BD5-4ABE-90FD-58C036FC4E8D}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Console\FirefoxDecrypt_console.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="GUI\FirefoxDecrypt_vcl.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="FirefoxDecrypt_console">
+        <MSBuild Projects="Console\FirefoxDecrypt_console.dproj"/>
+    </Target>
+    <Target Name="FirefoxDecrypt_console:Clean">
+        <MSBuild Projects="Console\FirefoxDecrypt_console.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FirefoxDecrypt_console:Make">
+        <MSBuild Projects="Console\FirefoxDecrypt_console.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FirefoxDecrypt_vcl">
+        <MSBuild Projects="GUI\FirefoxDecrypt_vcl.dproj"/>
+    </Target>
+    <Target Name="FirefoxDecrypt_vcl:Clean">
+        <MSBuild Projects="GUI\FirefoxDecrypt_vcl.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FirefoxDecrypt_vcl:Make">
+        <MSBuild Projects="GUI\FirefoxDecrypt_vcl.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="FirefoxDecrypt_console;FirefoxDecrypt_vcl"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="FirefoxDecrypt_console:Clean;FirefoxDecrypt_vcl:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="FirefoxDecrypt_console:Make;FirefoxDecrypt_vcl:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
