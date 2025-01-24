@@ -7,7 +7,7 @@ uses
   System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls,
   Vcl.StdCtrls,
-  System.JSON, System.IOUtils, System.Win.Registry, System.Math, Uni,
+  System.JSON, System.IOUtils, System.Win.Registry, System.Math, System.NetEncoding, Uni,
   SQLiteUniProvider, System.IniFiles, Vcl.Menus, Unit2;
 
 type
@@ -120,42 +120,6 @@ implementation
 
 {$R *.dfm}
 
-function DecodeBase64(const EncodedText: string): TBytes;
-const
-  Base64Chars: array [0 .. 63]
-    of Char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-var
-  i, j, k, DataLen: Integer;
-  Data: array [0 .. 3] of Byte;
-  ResultLen: Integer;
-begin
-  DataLen := Length(EncodedText);
-  while (DataLen > 0) and (EncodedText[DataLen] = '=') do
-    Dec(DataLen);
-  ResultLen := (DataLen * 3) div 4;
-  SetLength(Result, ResultLen);
-
-  j := 1;
-  k := 0;
-  for i := 1 to Length(EncodedText) div 4 do
-  begin
-    Data[0] := Pos(EncodedText[j], Base64Chars) - 1;
-    Data[1] := Pos(EncodedText[j + 1], Base64Chars) - 1;
-    Data[2] := Pos(EncodedText[j + 2], Base64Chars) - 1;
-    Data[3] := Pos(EncodedText[j + 3], Base64Chars) - 1;
-
-    if k < ResultLen then
-      Result[k] := (Data[0] shl 2) or (Data[1] shr 4);
-    if k + 1 < ResultLen then
-      Result[k + 1] := (Data[1] shl 4) or (Data[2] shr 2);
-    if k + 2 < ResultLen then
-      Result[k + 2] := (Data[2] shl 6) or Data[3];
-
-    Inc(j, 4);
-    Inc(k, 3);
-  end;
-end;
-
 function TForm1.GetCredentialsFromListView: TCredentialArray;
 var
   i: Integer;
@@ -227,74 +191,6 @@ begin
   inherited;
 end;
 
-{
-  function TFirefoxDecryptor.InitializeNSS: Boolean;
-  const
-  NSS_LIB_X64 = 'C:\Program Files\Mozilla Firefox\nss3.dll';
-  NSS_LIB_X86 = 'C:\Program Files (x86)\Mozilla Firefox\nss3.dll';
-  var
-  CurrentDir: string;
-  NSS_LIB: string;
-  FirefoxDir: string;
-  NSSResult: Integer;
-  KeySlot: Pointer;
-  begin
-  Result := False;
-
-  if SizeOf(Pointer) = 4 then
-  begin
-  NSS_LIB := NSS_LIB_X86;
-  FirefoxDir := 'C:\Program Files (x86)\Mozilla Firefox';
-  end
-  else
-  begin
-  NSS_LIB := NSS_LIB_X64;
-  FirefoxDir := 'C:\Program Files\Mozilla Firefox';
-  end;
-
-  CurrentDir := GetCurrentDir;
-  SetCurrentDir(FirefoxDir);
-
-  try
-  NSSModule := LoadLibrary(PChar(NSS_LIB));
-  if NSSModule = 0 then
-  Exit;
-
-  @NSS_InitFunc := GetProcAddress(NSSModule, 'NSS_Init');
-  @NSS_ShutdownFunc := GetProcAddress(NSSModule, 'NSS_Shutdown');
-  @PK11_GetInternalKeySlotFunc := GetProcAddress(NSSModule, 'PK11_GetInternalKeySlot');
-  @PK11SDR_DecryptFunc := GetProcAddress(NSSModule, 'PK11SDR_Decrypt');
-  @PK11_CheckUserPasswordFunc := GetProcAddress(NSSModule, 'PK11_CheckUserPassword');
-  @PK11_NeedLoginFunc := GetProcAddress(NSSModule, 'PK11_NeedLogin');
-
-  if not (Assigned(NSS_InitFunc) and
-  Assigned(NSS_ShutdownFunc) and
-  Assigned(PK11_GetInternalKeySlotFunc) and
-  Assigned(PK11SDR_DecryptFunc) and
-  Assigned(PK11_CheckUserPasswordFunc) and
-  Assigned(PK11_NeedLoginFunc)) then
-  Exit;
-
-  NSSResult := NSS_InitFunc(PAnsiChar(AnsiString('sql:' + FProfilePath)));
-  if NSSResult <> 0 then
-  Exit;
-
-  KeySlot := PK11_GetInternalKeySlotFunc();
-  if KeySlot = nil then
-  Exit;
-
-  if PK11_NeedLoginFunc(KeySlot) <> 0 then
-  begin
-  if PK11_CheckUserPasswordFunc(KeySlot, '') <> 0 then
-  Exit;
-  end;
-
-  Result := True;
-  finally
-  SetCurrentDir(CurrentDir);
-  end;
-  end;
-}
 function TFirefoxDecryptor.InitializeNSS: Boolean;
 const
   NSS_LIB_X64 = 'C:\Program Files\Mozilla Firefox\nss3.dll';
@@ -474,7 +370,8 @@ var
 begin
   Result := '';
   try
-    DecodedData := DecodeBase64(EncryptedData);
+
+    DecodedData := TNetEncoding.Base64.DecodeStringToBytes(EncryptedData);
 
     InputItem.ItemType := siBuffer;
     InputItem.Data := @DecodedData[0];

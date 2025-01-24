@@ -9,6 +9,7 @@ uses
   System.IOUtils,
   System.Win.Registry,
   System.Math,
+  System.NetEncoding,
   Winapi.Windows,
   Uni,
   SQLiteUniProvider,
@@ -61,44 +62,6 @@ type
     property ProfilePath: string read FProfilePath write FProfilePath;
     property OutputFormat: TOutputFormat read FOutputFormat write FOutputFormat;
   end;
-
-function DecodeBase64(const EncodedText: string): TBytes;
-const
-  Base64Chars: array [0 .. 63]
-    of Char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-var
-  i, j, k, DataLen: Integer;
-  Data: array [0 .. 3] of Byte;
-  ResultLen: Integer;
-begin
-  // Calculate decoded length
-  DataLen := Length(EncodedText);
-  while (DataLen > 0) and (EncodedText[DataLen] = '=') do
-    Dec(DataLen);
-  ResultLen := (DataLen * 3) div 4;
-  SetLength(Result, ResultLen);
-
-  // Decode
-  j := 1;
-  k := 0;
-  for i := 1 to Length(EncodedText) div 4 do
-  begin
-    Data[0] := Pos(EncodedText[j], Base64Chars) - 1;
-    Data[1] := Pos(EncodedText[j + 1], Base64Chars) - 1;
-    Data[2] := Pos(EncodedText[j + 2], Base64Chars) - 1;
-    Data[3] := Pos(EncodedText[j + 3], Base64Chars) - 1;
-
-    if k < ResultLen then
-      Result[k] := (Data[0] shl 2) or (Data[1] shr 4);
-    if k + 1 < ResultLen then
-      Result[k + 1] := (Data[1] shl 4) or (Data[2] shr 2);
-    if k + 2 < ResultLen then
-      Result[k + 2] := (Data[2] shl 6) or Data[3];
-
-    Inc(j, 4);
-    Inc(k, 3);
-  end;
-end;
 
 const
   NSS_INIT_READONLY = $0;
@@ -368,7 +331,8 @@ begin
   Result := '';
 
   try
-    DecodedData := DecodeBase64(EncryptedData);
+
+    DecodedData := TNetEncoding.Base64.DecodeStringToBytes(EncryptedData);
 
     // Setup input item
     InputItem.ItemType := siBuffer;
