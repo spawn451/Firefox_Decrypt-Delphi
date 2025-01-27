@@ -94,3 +94,5 @@ This project is intended for educational and recovery purposes only. Please ensu
 ## ⚠️ Disclaimer
 
 This tool comes with no warranties or guarantees. Users are responsible for ensuring they have the legal right to access any passwords they attempt to recover. The developers assume no liability for misuse or damage caused by this tool.
+
+<p align="center">Made with ❤️ using Delphi RAD Studio</p>
