@@ -40,7 +40,6 @@ type
     function InitializeNSS: Boolean;
     function DecryptData(const EncryptedData: string): string;
     function LoadCredentialsFromJSON: TCredentialArray;
-    function LoadCredentialsFromSQLite: TCredentialArray;
     procedure ShutdownNSS;
   public
     constructor Create;
@@ -439,49 +438,6 @@ begin
   end;
 end;
 
-function TFirefoxDecryptor.LoadCredentialsFromSQLite: TCredentialArray;
-var
-  Query: TUniQuery;
-  RecordCount: Integer;
-begin
-  SetLength(Result, 0);
-
-  if not FileExists(TPath.Combine(FProfilePath, 'signons.sqlite')) then
-    Exit;
-
-  FSQLiteConnection.Database := TPath.Combine(FProfilePath, 'signons.sqlite');
-
-  try
-    FSQLiteConnection.Connect;
-    Query := TUniQuery.Create(nil);
-    try
-      Query.Connection := FSQLiteConnection;
-      Query.SQL.Text :=
-        'SELECT hostname, encryptedUsername, encryptedPassword, encType FROM moz_logins';
-      Query.Open;
-
-      RecordCount := Query.RecordCount;
-      SetLength(Result, RecordCount);
-
-      Query.First;
-      while not Query.Eof do
-      begin
-        with Result[Query.RecNo - 1] do
-        begin
-          URL := Query.FieldByName('hostname').AsString;
-          Username := Query.FieldByName('encryptedUsername').AsString;
-          Password := Query.FieldByName('encryptedPassword').AsString;
-          EncType := Query.FieldByName('encType').AsInteger;
-        end;
-        Query.Next;
-      end;
-    finally
-      Query.Free;
-    end;
-  except
-    SetLength(Result, 0);
-  end;
-end;
 
 { TForm1 }
 
@@ -553,8 +509,6 @@ begin
 
   // Try JSON first, then SQLite
   Credentials := FDecryptor.LoadCredentialsFromJSON;
-  if Length(Credentials) = 0 then
-    Credentials := FDecryptor.LoadCredentialsFromSQLite;
 
   SetLength(DecryptedCreds, Length(Credentials));
 
