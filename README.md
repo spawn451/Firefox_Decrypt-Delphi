@@ -1,4 +1,4 @@
-# Firefox_Decrypt-Delphi
+# Firefox_Decrypt_NSS-Delphi
 
 This tool can be used to recover passwords from a profile protected by a Master Password as long as the latter is known. If a profile is not protected by a Master Password, passwords are displayed without prompt.
 
