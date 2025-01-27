@@ -4,6 +4,9 @@ This tool can be used to recover passwords from a profile protected by a Master 
 
 This tool does not try to crack or brute-force the Master Password in any way. If the Master Password is not known it will simply fail to recover any data.
 
+# Detail
+This tool decrypt Mozilla Firefox passwords using Firefox NSS (Network Security Services) library.
+
 # Usage
 
 ## Console version
